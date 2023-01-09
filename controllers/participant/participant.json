@@ -1,5 +1,5 @@
 {
-  "name": "My name",
-  "description": "Description of my robot controller program.",
-  "country": "ISO 3166-1 alpha-2 country code"
+  "name": "Eve",
+  "description": "Demonstrates how to use the camera and gives an image processing example to locate the opponent.",
+  "country": "CH"
 }
