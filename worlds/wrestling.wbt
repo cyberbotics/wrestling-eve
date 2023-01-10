@@ -124,7 +124,7 @@ DEF WRESTLER_BLUE Nao {
   customColor [
     0 0.3333 1
   ]
-  controller "opponent"
+  controller "<none>"
   selfCollision TRUE
 }
 WrestlingReferee {
