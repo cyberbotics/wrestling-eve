@@ -17,13 +17,15 @@ Demonstrates how to use the camera and gives an image processing example to loca
 """
 
 from controller import Robot, Motion
+
 import sys
 sys.path.append('..')
-from utils.routines import Fall_detection # David's fall detection is implemented in this class
-from utils.fsm import Finite_state_machine
-from utils.motion import Current_motion_manager
-from utils.utils import Average
 import utils.image
+from utils.utils import Average
+from utils.motion import Current_motion_manager
+from utils.fsm import Finite_state_machine
+# David's fall detection is implemented in this class:
+from utils.routines import Fall_detection
 
 try:
     import numpy as np
@@ -79,7 +81,8 @@ class Eve (Robot):
 
     def run(self):
         while self.step(self.time_step) != -1:
-            self.opponent_position.update_average(self._get_normalized_opponent_horizontal_position())
+            self.opponent_position.update_average(
+                self._get_normalized_opponent_horizontal_position())
             self.fall_detector.check()
             self.fsm.execute_action()
 
@@ -92,7 +95,8 @@ class Eve (Robot):
             [x, y, _] = self.gps.getValues()
             if -0.9 < x < 0.9 and -0.7 < y < 0.7:
                 self.current_motion.set(self.motions['SideStepLeft'])
-            else: return
+            else:
+                return
         self.fsm.transition_to('BLOCKING_MOTION')
 
     def pending(self):
@@ -114,7 +118,7 @@ class Eve (Robot):
         if horizontal is None:
             return 0
         return horizontal * 2/img.shape[1] - 1
-    
+
     def locate_opponent(self, img):
         """Image processing demonstration to locate the opponent robot in an image."""
         # we suppose the robot to be located at a concentration of multiple color changes (big Laplacian values)
@@ -136,6 +140,7 @@ class Eve (Robot):
         else:
             # if no contour is found, we return None
             return None, None, None
+
 
 # create the Robot instance and run main loop
 wrestler = Eve()
