@@ -17,22 +17,14 @@ Demonstrates how to use the camera and gives an image processing example to loca
 """
 
 from controller import Robot, Motion
-
 import sys
 sys.path.append('..')
+from utils.fall_detection import FallDetection # David's fall detection is implemented in this class
+from utils.finite_state_machine import FiniteStateMachine
+from utils.current_motion_manager import CurrentMotionManager
+from utils.running_average import RunningAverage
 import utils.image
-from utils.utils import Average
-from utils.motion import Current_motion_manager
-from utils.fsm import Finite_state_machine
-# David's fall detection is implemented in this class:
-from utils.routines import Fall_detection
 
-try:
-    import numpy as np
-    np.set_printoptions(suppress=True)
-except ImportError:
-    sys.exit("Warning: 'numpy' module not found. Please check the Python modules installation instructions " +
-             "at 'https://www.cyberbotics.com/doc/guide/using-python'.")
 try:
     import cv2
 except ImportError:
@@ -47,7 +39,7 @@ class Eve (Robot):
         # retrieves the WorldInfo.basicTimeTime (ms) from the world file
         self.time_step = int(self.getBasicTimeStep())
 
-        self.fsm = Finite_state_machine(
+        self.fsm = FiniteStateMachine(
             states=['CHOOSE_ACTION', 'BLOCKING_MOTION'],
             initial_state='CHOOSE_ACTION',
             actions={
@@ -67,9 +59,9 @@ class Eve (Robot):
         self.RShoulderRoll = self.getDevice("RShoulderRoll")
         self.LShoulderRoll = self.getDevice("LShoulderRoll")
 
-        self.fall_detector = Fall_detection(self.time_step, self)
+        self.fall_detector = FallDetection(self.time_step, self)
 
-        self.current_motion = Current_motion_manager()
+        self.current_motion = CurrentMotionManager()
         # load motion files
         self.motions = {
             'SideStepLeft': Motion('../motions/SideStepLeftLoop.motion'),
@@ -77,7 +69,7 @@ class Eve (Robot):
             'TurnRight':    Motion('../motions/TurnRight20.motion'),
         }
 
-        self.opponent_position = Average(dimensions=1)
+        self.opponent_position = RunningAverage(dimensions=1)
 
     def run(self):
         while self.step(self.time_step) != -1:
