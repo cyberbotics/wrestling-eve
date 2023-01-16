@@ -11,19 +11,21 @@ Beats [David](https://github.com/cyberbotics/wrestling-david) by locating and do
 Here is the [participant.py](./controllers/participant/participant.py) file:
 
 ``` Python
-from controller import Robot, Motion
-import cv2
 import sys
 sys.path.append('..')
-from utils.current_motion_manager import CurrentMotionManager
-from utils.finite_state_machine import FiniteStateMachine
-from utils.image_processing import ImageProcessing as IP
-from utils.running_average import RunningAverage
-from utils.fall_detection import FallDetection  # David's fall detection is implemented in this class
 from utils.camera import Camera
+from utils.fall_detection import FallDetection  # David's fall detection is implemented in this class
+from utils.running_average import RunningAverage
+from utils.image_processing import ImageProcessing as IP
+from utils.finite_state_machine import FiniteStateMachine
+from utils.current_motion_manager import CurrentMotionManager
+from controller import Robot, Motion
+import cv2
 
 
 class Eve (Robot):
+    NUMBER_OF_DODGE_STEPS = 10
+
     def __init__(self):
         Robot.__init__(self)
 
@@ -40,8 +42,6 @@ class Eve (Robot):
         )
 
         self.camera = Camera(self)
-        self.gps = self.getDevice("gps")
-        self.gps.enable(self.time_step)
 
         # arm motors for getting up from a side fall
         self.RShoulderRoll = self.getDevice("RShoulderRoll")
@@ -52,10 +52,13 @@ class Eve (Robot):
         # load motion files
         self.motions = {
             'SideStepLeft': Motion('../motions/SideStepLeftLoop.motion'),
+            'SideStepRight': Motion('../motions/SideStepRightLoop.motion'),
             'TurnRight': Motion('../motions/TurnRight20.motion'),
             'TurnLeft': Motion('../motions/TurnLeft20.motion'),
         }
         self.opponent_position = RunningAverage(dimensions=1)
+        self.dodging_direction = 'left'
+        self.counter = 0
 
     def run(self):
         while self.step(self.time_step) != -1:
@@ -70,9 +73,19 @@ class Eve (Robot):
         elif self.opponent_position.average > 0.4:
             self.current_motion.set(self.motions['TurnRight'])
         else:
-            [x, y, _] = self.gps.getValues()
-            if -0.9 < x < 0.9 and -0.7 < y < 0.7:
-                self.current_motion.set(self.motions['SideStepLeft'])
+            # dodging by alternating between left and right side steps to avoid easily falling off the ring
+            if self.dodging_direction == 'left':
+                if self.counter < self.NUMBER_OF_DODGE_STEPS:
+                    self.current_motion.set(self.motions['SideStepLeft'])
+                    self.counter += 1
+                else:
+                    self.dodging_direction = 'right'
+            elif self.dodging_direction == 'right':
+                if self.counter > 0:
+                    self.current_motion.set(self.motions['SideStepRight'])
+                    self.counter -= 1
+                else:
+                    self.dodging_direction = 'left'
             else:
                 return
         self.fsm.transition_to('BLOCKING_MOTION')
