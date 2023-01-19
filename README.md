@@ -6,6 +6,18 @@
 
 Demonstrates how to use the camera and gives an image processing example to locate the opponent. A step by step explanation of the whole image processing workflow is provided by a [notebook](./notebook/image_processing_explanation.ipynb).
 
+This controller needs OpenCV and Numpy, therefore the [Dockerfile](controllers/Dockerfile#L4-L9) needs to be updated:
+
+```Dockerfile
+# Dependencies for OpenCV
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+RUN pip3 install --upgrade pip && \
+    pip3 install --no-cache-dir \
+    opencv-python
+```
+
 Beats [David](https://github.com/cyberbotics/wrestling-david) by locating and dodging him.
 
 Here is the [participant.py](./controllers/participant/participant.py) file:
