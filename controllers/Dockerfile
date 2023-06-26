@@ -1,4 +1,5 @@
-FROM cyberbotics/webots.cloud:R2023a-ubuntu20.04-numpy
+# FROM cyberbotics/webots.cloud:R2023a-ubuntu20.04-numpy
+FROM benjamindeleze/webots-test:R2023b-cloud
 
 # Dependencies for OpenCV
 RUN apt-get update && apt-get install -y \
